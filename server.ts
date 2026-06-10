@@ -282,11 +282,18 @@ async function setupVite() {
     console.log('Serving production-ready compiled assets from dist/');
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`[APLD Server] listening live on http://localhost:${PORT}`);
+  // Only start listening if not running in a serverless environment like Vercel
+  if (!process.env.VERCEL) {
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`[APLD Server] listening live on http://localhost:${PORT}`);
+    });
+  }
+}
+
+if (!process.env.VERCEL) {
+  setupVite().catch((err) => {
+    console.error('Error initializing Express + Vite fullstack server:', err);
   });
 }
 
-setupVite().catch((err) => {
-  console.error('Error initializing Express + Vite fullstack server:', err);
-});
+export default app;
