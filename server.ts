@@ -1,6 +1,5 @@
 import express from 'express';
 import path from 'path';
-import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from '@google/genai';
 import dotenv from 'dotenv';
 
@@ -54,8 +53,12 @@ app.all('/api/supabase-proxy/*', async (req, res) => {
       return res.status(500).json({ error: 'Supabase URL is not configured on the server.' });
     }
 
-    // Extract path and query params keeping everything intact
-    const pathSuffix = originalUrl.substring('/api/supabase-proxy'.length);
+    // Extract path and query params keeping everything intact, supporting both /api/supabase-proxy and /supabase-proxy
+    const proxyPathSegment = '/supabase-proxy';
+    const proxyIndex = originalUrl.indexOf(proxyPathSegment);
+    const pathSuffix = proxyIndex !== -1
+      ? originalUrl.substring(proxyIndex + proxyPathSegment.length)
+      : originalUrl;
     
     // Normalize to avoid double slash problems
     const baseUrl = targetUrl.endsWith('/') ? targetUrl.slice(0, -1) : targetUrl;
@@ -267,6 +270,7 @@ ${context || message}`;
 // Serve Vite dev server or static static assets
 async function setupVite() {
   if (process.env.NODE_ENV !== 'production') {
+    const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa',

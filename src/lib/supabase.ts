@@ -47,13 +47,14 @@ export const customFetch = async (input: RequestInfo | URL, init?: RequestInit) 
   if (targetUrlString && urlStr.startsWith(targetUrlString)) {
     const pathSuffix = urlStr.substring(targetUrlString.length);
     const proxyUrl = `/api/supabase-proxy${pathSuffix}`;
+    const absoluteProxyUrl = `${window.location.origin}${proxyUrl}`;
     
     if (typeof input === 'string') {
-      return fetch(proxyUrl, init);
+      return fetch(absoluteProxyUrl, init);
     } else if (input instanceof URL) {
-      return fetch(new URL(proxyUrl, window.location.origin), init);
+      return fetch(new URL(absoluteProxyUrl), init);
     } else {
-      return fetch(new Request(proxyUrl, input as any), init);
+      return fetch(new Request(absoluteProxyUrl, input as any), init);
     }
   }
   return fetch(input, init);
